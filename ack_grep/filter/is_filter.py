@@ -74,7 +74,7 @@ class IsPathGroupFilter(Filter):
         self.paths.add(path_filter.filename)
 
     def filter(self, file: AckFile) -> bool:
-        return file.name in self.paths
+        return file.name in self.paths or os.path.basename(file.name) in self.paths
 
 
 Filter.register_filter("is", IsFilter)

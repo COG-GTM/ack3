@@ -117,7 +117,7 @@ def _build_file_filter(opt: dict) -> Any:
 
     def file_filter(filepath: str, dirpath: str | None = None) -> bool:
         if os.path.islink(filepath) and not opt.get("follow", False):
-            pass
+            return False
 
         try:
             mode = os.stat(filepath).st_mode
@@ -256,7 +256,7 @@ def print_matches_in_file(
     if state.opt_show_filename and state.opt_heading and state.opt_color:
         display_filename = colorize(filename, state.color_filename)
 
-    max_count = state.opt_m if state.opt_m else -1
+    max_count = state.opt_m if state.opt_m is not None else -1
 
     if is_tracking_context:
         return pmif_context(state, fh, filename, display_filename, max_count, n_before, n_after)
@@ -597,7 +597,17 @@ def print_line_with_options(
         if underline:
             prefix_parts = line_parts[:-1]
             if prefix_parts:
-                spaces = len(separator.join(prefix_parts)) + 1
+                raw_parts: list[str] = []
+                if state.opt_show_filename and filename:
+                    if state.opt_heading:
+                        raw_parts.append(str(lineno))
+                    else:
+                        raw_parts.extend([filename, str(lineno)])
+                    if state.opt_column:
+                        colno = state.match_colno or 0
+                        if colno:
+                            raw_parts.append(str(colno))
+                spaces = len(separator.join(raw_parts)) + 1
                 ack_grep.print_line(" " * spaces)
             ack_grep.say(underline)
 
@@ -832,6 +842,7 @@ def main(argv: list[str] | None = None) -> None:
         ack_grep.set_up_pager(opt["pager"])
 
     # Run the appropriate file loop
+    nmatches = 0
     try:
         if opt.get("f"):
             nmatches = file_loop_files_only(state, files)
