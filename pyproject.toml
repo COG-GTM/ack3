@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ack"
+version = "3.9.0"
+description = "ack is a code-searching tool, similar to grep but optimized for programmers searching source code"
+readme = "README.md"
+license = {text = "Artistic-2.0"}
+requires-python = ">=3.9"
+authors = [
+    {name = "Andy Lester"},
+]
+keywords = ["grep", "search", "code", "source"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Artistic License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development",
+    "Topic :: Utilities",
+]
+
+[project.scripts]
+ack = "ack_grep.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["ack_grep*"]
