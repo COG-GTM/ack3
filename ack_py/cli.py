@@ -819,8 +819,11 @@ def _file_loop_normal(
                         nmatches += 1
                         max_count -= 1
                     else:
-                        if file_break and not has_printed_from_this_file and has_printed_from_any_file:
-                            ack_print_blank_line()
+                        if not has_printed_from_this_file:
+                            if file_break and has_printed_from_any_file:
+                                ack_print_blank_line()
+                            if show_filename and heading:
+                                ack_say(display_filename)
                         _print_line(
                             filename, line, lineno, "-", use_color, show_filename,
                             heading, False, None, None, False, None, skip_coloring=True,
