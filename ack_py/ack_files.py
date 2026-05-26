@@ -63,10 +63,14 @@ class AckFiles:
             return None
 
         def _iter() -> Iterator[str]:
-            for line in fh:
-                line = line.rstrip("\n").rstrip("\r")
-                if line:
-                    yield line
+            try:
+                for line in fh:
+                    line = line.rstrip("\n").rstrip("\r")
+                    if line:
+                        yield line
+            finally:
+                if filename != "-":
+                    fh.close()
 
         return cls(_iter())
 

@@ -26,6 +26,7 @@ from ack_py.config_finder import find_config_files
 from ack_py.filters.base import Filter
 from ack_py.filters.collection import CollectionFilter
 from ack_py.filters.default import DefaultFilter
+from ack_py.filters.is_path import IsPathFilter
 from ack_py.output import (
     ack_print,
     ack_print_blank_line,
@@ -301,6 +302,18 @@ def _build_parser() -> argparse.ArgumentParser:
 # File filtering compilation
 # ---------------------------------------------------------------------------
 
+def _create_is_filter(args_str: str) -> list[Filter]:
+    """Create is filters, adding IsPathFilter when args contain path separators."""
+    filters: list[Filter] = []
+    for arg in args_str.split(","):
+        if not arg:
+            continue
+        filters.append(Filter.create_filter("is", arg))
+        if os.sep in arg or "/" in arg:
+            filters.append(IsPathFilter(arg))
+    return filters
+
+
 def _compile_ignore_dir_filters(
     ignore_dir_specs: list[str],
     noignore_dir_specs: list[str],
@@ -312,16 +325,23 @@ def _compile_ignore_dir_filters(
         if ":" not in spec:
             spec = "is:" + spec
         filter_type, args_str = spec.split(":", 1)
-        f = Filter.create_filter(filter_type, *args_str.split(","))
-        filters.append(f)
+        if filter_type == "is":
+            filters.extend(_create_is_filter(args_str))
+        else:
+            f = Filter.create_filter(filter_type, *args_str.split(","))
+            filters.append(f)
 
     # noignore dirs invert
     for spec in noignore_dir_specs:
         if ":" not in spec:
             spec = "is:" + spec
         filter_type, args_str = spec.split(":", 1)
-        f = Filter.create_filter(filter_type, *args_str.split(","))
-        filters.append(f.invert())
+        if filter_type == "is":
+            for f in _create_is_filter(args_str):
+                filters.append(f.invert())
+        else:
+            f = Filter.create_filter(filter_type, *args_str.split(","))
+            filters.append(f.invert())
 
     return filters
 
@@ -333,8 +353,12 @@ def _compile_ignore_file_filters(ignore_file_specs: list[str]) -> CollectionFilt
     coll = CollectionFilter()
     for spec in ignore_file_specs:
         filter_type, args_str = spec.split(":", 1)
-        f = Filter.create_filter(filter_type, *args_str.split(","))
-        coll.add(f)
+        if filter_type == "is":
+            for f in _create_is_filter(args_str):
+                coll.add(f)
+        else:
+            f = Filter.create_filter(filter_type, *args_str.split(","))
+            coll.add(f)
     return coll
 
 
