@@ -920,24 +920,29 @@ def _print_line(
     """Format and print a single output line."""
     line_parts: list[str] = []
 
+    if use_color:
+        disp_lineno = colored(str(lineno), get_color("ACK_COLOR_LINENO"))
+    else:
+        disp_lineno = str(lineno)
+
     if show_filename and filename is not None:
         if use_color:
             disp_filename = colored(filename, get_color("ACK_COLOR_FILENAME"))
-            disp_lineno = colored(str(lineno), get_color("ACK_COLOR_LINENO"))
         else:
             disp_filename = filename
-            disp_lineno = str(lineno)
 
         if heading:
             line_parts.append(disp_lineno)
         else:
             line_parts.extend([disp_filename, disp_lineno])
+    else:
+        line_parts.append(disp_lineno)
 
-        if opt_column and match_colno is not None:
-            colno_str = str(match_colno)
-            if use_color:
-                colno_str = colored(colno_str, get_color("ACK_COLOR_COLNO"))
-            line_parts.append(colno_str)
+    if opt_column and match_colno is not None:
+        colno_str = str(match_colno)
+        if use_color:
+            colno_str = colored(colno_str, get_color("ACK_COLOR_COLNO"))
+        line_parts.append(colno_str)
 
     if opt_output is not None and not skip_coloring:
         # --output mode: for each match, print the output expression
